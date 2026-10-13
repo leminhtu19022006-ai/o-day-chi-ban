@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiên Long - Dụng cụ học tập</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- CÀI ĐẶT CHUNG --- */
+        :root {
+            --primary-blue: #00469b;
+            --light-blue: #eaf4fc;
+            --accent-red: #d32f2f;
+            --text-dark: #333;
+            --text-gray: #666;
+            --border-color: #ddd;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f4f4; color: var(--text-dark); }
+        a { text-decoration: none; color: inherit; cursor: pointer; }
+        ul { list-style: none; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+        /* --- HEADER --- */
+        header { background-color: var(--primary-blue); color: var(--white); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .top-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; gap: 20px; }
+        .logo { font-size: 24px; font-weight: bold; font-style: italic; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .logo i { font-size: 28px; }
+        .search-bar { flex: 1; display: flex; background: var(--white); border-radius: 4px; overflow: hidden; max-width: 500px; }
+        .search-bar input { flex: 1; padding: 10px 15px; border: none; outline: none; }
+        .search-bar button { background: var(--primary-blue); color: white; border: none; padding: 0 20px; cursor: pointer; font-size: 18px; transition: 0.3s; }
+        .search-bar button:hover { background: #00337a; }
+        .header-actions { display: flex; gap: 20px; font-size: 13px; }
+        .action-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .action-item i { font-size: 20px; }
+        .cart-icon { position: relative; }
+        .cart-badge { position: absolute; top: -8px; right: -8px; background: red; color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; transition: transform 0.2s; }
+        
+        /* --- NAVIGATION --- */
+        .main-nav { background-color: var(--white); border-bottom: 1px solid var(--border-color); }
+        .nav-list { display: flex; padding: 0; gap: 30px; overflow-x: auto; white-space: nowrap; }
+        .nav-list li { padding: 15px 0; font-weight: 600; font-size: 14px; text-transform: uppercase; cursor: pointer; color: var(--text-dark); position: relative; transition: color 0.2s; }
+        .nav-list li:hover, .nav-list li.active { color: var(--primary-blue); }
+        .nav-list li.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary-blue); }
+        .nav-list li.hot { color: var(--accent-red); }
+
+        /* --- PAGE CONTENT --- */
+        .page-section { display: none; animation: fadeIn 0.3s ease; }
+        .page-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .breadcrumb { padding: 15px 0; font-size: 14px; color: var(--text-gray); }
+        .breadcrumb span { color: var(--text-dark); font-weight: 500; }
+        .page-title { text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0 30px; color: #2c3e50; }
+
+        /* --- MAIN LAYOUT (DANH MỤC) --- */
+        .main-content { display: flex; gap: 20px; margin-bottom: 50px; }
+        .sidebar { width: 250px; flex-shrink: 0; }
+        .filter-group { background: var(--white); padding: 15px; border-radius: 4px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .filter-title { font-weight: 600; margin-bottom: 15px; display: flex; justify-content: space-between; cursor: pointer; color: #333; }
+        .filter-list label { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; color: var(--text-gray); cursor: pointer; }
+        .filter-list input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary-blue); }
+        .product-area { flex: 1; }
+        
+        .banner-img { width: 100%; border-radius: 8px; margin-bottom: 20px; height: 200px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; position: relative; overflow: hidden; }
+        .banner-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0.6; }
+        .banner-text { position: relative; z-index: 1; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); text-align: center; }
+
+        /* --- PRODUCT GRID --- */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .product-card { background: var(--white); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; position: relative; display: flex; flex-direction: column; cursor: pointer; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .card-img { height: 200px; background-color: #f9f9f9; display: flex; align-items: center; justify-content: center; position: relative; padding: 10px; }
+        .card-img img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s; }
+        .product-card:hover .card-img img { transform: scale(1.05); }
+        .status-badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; font-size: 12px; border-radius: 4px; z-index: 2; }
+        .card-info { padding: 15px; flex: 1; display: flex; flex-direction: column; }
+        .sold-count { font-size: 12px; color: var(--text-gray); margin-bottom: 5px; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; width: fit-content; }
+        .product-name { font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 10px; line-height: 1.4; min-height: 40px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .price-box { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; margin-top: auto; }
+        .current-price { color: var(--accent-red); font-weight: bold; font-size: 16px; }
+        .old-price { color: #999; text-decoration: line-through; font-size: 13px; }
+        .discount { background: var(--accent-red); color: white; font-size: 11px; padding: 2px 4px; border-radius: 2px; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 8px 0; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary-blue); color: var(--primary-blue); }
+        .btn-outline:hover { background: var(--light-blue); }
+        .btn-primary { background: var(--primary-blue); color: white; }
+        .btn-primary:hover { background: #00337a; }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* --- PRODUCT DETAIL PAGE --- */
+        .detail-container { display: flex; gap: 40px; background: white; padding: 30px; border-radius: 8px; margin-bottom: 50px; }
+        .detail-img-box { flex: 1; max-width: 400px; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; border-radius: 8px; padding: 20px; }
+        .detail-img-box img { max-width: 100%; max-height: 400px; object-fit: contain; }
+        .detail-info { flex: 1.5; }
+        .detail-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; line-height: 1.3; }
+        .detail-meta { display: flex; gap: 20px; margin-bottom: 20px; color: var(--text-gray); font-size: 14px; }
+        .detail-price-box { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+        .detail-price-box .current-price { font-size: 28px; }
+        .detail-price-box .old-price { font-size: 16px; }
+        .detail-desc { margin-bottom: 30px; line-height: 1.6; color: var(--text-gray); }
+        .detail-actions { display: flex; gap: 20px; }
+        .btn-large { padding: 15px 40px; font-size: 16px; border-radius: 4px; font-weight: bold; }
+        .btn-back { background: #eee; color: #333; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-back:hover { background: #ddd; }
+
+        /* --- FOOTER --- */
+        footer { background-color: var(--primary-blue); color: var(--white); padding: 40px 0 20px; margin-top: auto; }
+        .newsletter { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 20px; margin-bottom: 30px; }
+        .newsletter-form { display: flex; background: white; border-radius: 20px; overflow: hidden; width: 400px; }
+        .newsletter-form input { flex: 1; border: none; padding: 10px 20px; outline: none; }
+        .newsletter-form button { background: transparent; border: none; padding: 0 20px; font-weight: bold; cursor: pointer; color: var(--primary-blue); }
+        .footer-content { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 30px; font-size: 14px; line-height: 1.6; }
+        .footer-col h4 { margin-bottom: 15px; font-size: 16px; }
+        .footer-col ul li { margin-bottom: 8px; cursor: pointer; }
+        .footer-col ul li:hover { text-decoration: underline; }
+
+        /* Floating Buttons */
+        .floating-btns { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 100; }
+        .float-btn { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; transition: 0.3s; }
+        .float-btn:hover { transform: scale(1.1); }
+        .btn-zalo { background-color: #008fe5; font-weight: bold; font-size: 14px; }
+        .btn-mess { background-color: #0084ff; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content { flex-direction: column; }
+            .sidebar { width: 100%; display: none; }
+            .top-header { flex-direction: column; gap: 10px; }
+            .search-bar { width: 100%; max-width: none; }
+            .header-actions { width: 100%; justify-content: space-between; }
+            .newsletter { flex-direction: column; gap: 15px; text-align: center; }
+            .newsletter-form { width: 100%; }
+            .footer-content { grid-template-columns: 1fr; text-align: center; }
+            .detail-container { flex-direction: column; padding: 15px; }
+            .detail-img-box { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="container top-header">
+            <div class="logo" onclick="navigateTo('home')">
+                <i class="fa-solid fa-book-open"></i> THIÊN LONG
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" placeholder="Tìm kiếm sản phẩm...">
+                <button><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <div class="header-actions">
+                <div class="action-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <div>
+                        <div style="font-size: 11px;">Hotline</div>
+                        <div style="font-weight: bold;">1900 866 819</div>
+                    </div>
+                </div>
+                <div class="action-item">
+                    <i class="fa-regular fa-user"></i>
+                    <div>
+                        <div style="font-size: 11px;">Đăng nhập / Đăng ký</div>
+                        <div style="font-weight: bold;">Tài khoản của tôi</div>
+                    </div>
+                </div>
+                <div class="action-item cart-icon" onclick="alert('Chức năng giỏ hàng đang được phát triển!')">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="cart-badge" id="cartCount">0</span>
+                    <div style="font-weight: bold; margin-left: 5px;">Giỏ hàng</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="main-nav">
+        <div class="container">
+            <ul class="nav-list">
+                <li onclick="navigateTo('home')" class="active" id="nav-home">TRANG CHỦ</li>
+                <li onclick="navigateTo('category', 'hoc-tap')" id="nav-hoc-tap">HỌC TẬP <i class="fa-solid fa-angle-down"></i></li>
+                <li onclick="navigateTo('category', 'van-phong')" id="nav-van-phong">VĂN PHÒNG PHẨM <i class="fa-solid fa-angle-down"></i></li>
+                <li onclick="navigateTo('category', 'my-thuat')" id="nav-my-thuat">MỸ THUẬT <i class="fa-solid fa-angle-down"></i></li>
+                <li class="hot" onclick="navigateTo('category', 'outlet')" id="nav-outlet">🔥 OUTLET</li>
+                <li style="color: #d32f2f;" onclick="navigateTo('category', 'top-ban-chay')" id="nav-top">🏆 TOP BÁN CHẠY</li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <div class="container" id="app-container">
+        
+        <!-- PAGE 1: HOME (Giới thiệu) -->
+        <section id="page-home" class="page-section active">
+            <div class="banner-img" style="height: 400px; margin-top: 20px;">
+                <img src="https://via.placeholder.com/1200x400/00469b/ffffff?text=THIEN+LONG+-+BACK+TO+SCHOOL" alt="Banner Home">
+                <div class="banner-text">
+                    <h1>Chào mừng đến với Thiên Long</h1>
+                    <p style="margin-top: 10px; font-size: 16px;">Hệ thống bán lẻ dụng cụ học tập & văn phòng phẩm chính hãng</p>
+                    <button class="btn btn-primary btn-large" style="margin-top: 20px; width: auto;" onclick="navigateTo('category', 'hoc-tap')">Mua sắm ngay</button>
+                </div>
+            </div>
+            
+            <h2 class="page-title">Sản phẩm nổi bật</h2>
+            <div class="product-grid" id="home-product-grid">
+                <!-- Sản phẩm sẽ được render bằng JS -->
+            </div>
+        </section>
+
+        <!-- PAGE 2: CATEGORY (Danh mục sản phẩm động) -->
+        <section id="page-category" class="page-section">
+            <div class="breadcrumb">
+                Trang chủ / Danh mục / <span id="breadcrumb-category-name">Danh mục</span>
+            </div>
+            <h1 class="page-title" id="category-title">Danh mục sản phẩm</h1>
+
+            <div class="main-content">
+                <!-- SIDEBAR FILTERS -->
+                <aside class="sidebar">
+                    <div class="filter-group">
+                        <div class="filter-title">Sắp xếp <i class="fa-solid fa-angle-down"></i></div>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="filter-title">Nhãn Hàng <i class="fa-solid fa-angle-down"></i></div>
+                        <div class="filter-list">
+                            <label><input type="checkbox"> Colokit</label>
+                            <label><input type="checkbox"> Điểm 10</label>
+                            <label><input type="checkbox"> Thiên Long</label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="filter-title">Lọc giá <i class="fa-solid fa-angle-down"></i></div>
+                        <div class="filter-list">
+                            <label><input type="checkbox"> Dưới 50.000đ</label>
+                            <label><input type="checkbox"> 50.000đ - 100.000đ</label>
+                            <label><input type="checkbox"> 100.000đ - 200.000đ</label>
+                            <label><input type="checkbox"> Trên 300.000đ</label>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- PRODUCT LIST -->
+                <main class="product-area">
+                    <div class="banner-img" id="category-banner" style="height: 200px;">
+                        <!-- Banner sẽ được render bằng JS -->
+                    </div>
+                    <div class="product-grid" id="category-product-grid">
+                        <!-- Sản phẩm sẽ được render bằng JS -->
+                    </div>
+                </main>
+            </div>
+        </section>
+
+        <!-- PAGE 3: PRODUCT DETAIL (Chi tiết sản phẩm) -->
+        <section id="page-detail" class="page-section">
+            <button class="btn-back" onclick="navigateTo('category')"><i class="fa-solid fa-arrow-left"></i> Quay lại danh mục</button>
+            <div class="detail-container" id="product-detail-container">
+                <!-- Nội dung chi tiết sẽ được render bằng JS -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="newsletter">
+                <h3>Đăng ký nhận tin</h3>
+                <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Đã đăng ký thành công!');">
+                    <input type="email" placeholder="Nhập email của bạn" required>
+                    <button type="submit">ĐĂNG KÝ</button>
+                </form>
+                <div style="font-weight: bold; font-size: 18px;">Kết nối với chúng tôi</div>
+            </div>
+
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>Thienlong.vn - Website thương mại điện tử</h4>
+                    <p>thuộc Công Ty TNHH MTV TM-DV Thiên Long Hoàn Cầu</p>
+                    <p style="margin-top: 10px;">Địa chỉ: 123 Nguyễn Văn Cừ, Quận 5, TP.HCM</p>
+                </div>
+                <div class="footer-col">
+                    <h4>THÔNG TIN HỖ TRỢ</h4>
+                    <ul>
+                        <li>Hướng dẫn mua hàng</li>
+                        <li>Chính sách đổi trả</li>
+                        <li>Chính sách bảo mật</li>
+                        <li>Câu hỏi thường gặp</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Về thienlong.vn</h4>
+                    <ul>
+                        <li>Giới thiệu</li>
+                        <li>Tuyển dụng</li>
+                        <li>Liên hệ</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- FLOATING BUTTONS -->
+    <div class="floating-btns">
+        <div class="float-btn btn-zalo">Zalo</div>
+        <div class="float-btn btn-mess"><i class="fa-brands fa-facebook-messenger"></i></div>
+    </div>
+
+    <!-- SCRIPT XỬ LÝ CHÍNH -->
+    <script>
+        // --- DỮ LIỆU SẢN PHẨM (Giả lập Database) ---
+        // Thêm thuộc tính 'category' để phân loại sản phẩm
+        const products = [
+            // HỌC TẬP
+            {
+                id: 1,
+                name: "Combo Vui Hè Lớp 1 - 12 Món",
+                price: 231930,
+                oldPrice: 257700,
+                discount: 10,
+                sold: 411,
+                status: "Hết hàng",
+                image: "https://via.placeholder.com/300x300/eee/999?text=Combo+Lop+1",
+                description: "Bộ combo bao gồm đầy đủ dụng cụ học tập cho bé vào lớp 1: Bút chì, tẩy, thước kẻ, hộp bút, vở... Chất liệu an toàn, màu sắc bắt mắt.",
+                category: "hoc-tap"
+            },
+            {
+                id: 2,
+                name: "[Combo Cấp 1] Trọn Bộ Dụng Cụ Học Tập Lớp 2",
+                price: 408150,
+                oldPrice: 453500,
+                discount: 10,
+                sold: 144,
+                status: "Hết hàng",
+                image: "https://via.placeholder.com/300x300/eee/999?text=Combo+Lop+2",
+                description: "Trọn bộ dụng cụ học tập dành cho học sinh lớp 2. Bao gồm bút mực, bút chì, compa, thước đo độ, và các loại vở ô ly.",
+                category: "hoc-tap"
+            },
+            {
+                id: 3,
+                name: "[Combo Cấp 1] Trọn Bộ Dụng Cụ Học Tập Lớp 3",
+                price: 514800,
+                oldPrice: 572000,
+                discount: 10,
+                sold: 123,
+                status: "Hết hàng",
+                image: "https://via.placeholder.com/300x300/eee/999?text=Combo+Lop+3",
+                description: "Combo dành cho học sinh lớp 3 với đầy đủ bút viết, màu vẽ, giấy kiểm tra và các dụng cụ hỗ trợ học tập khác.",
+                category: "hoc-tap"
+            },
+            {
+                id: 4,
+                name: "Bút Chì Màu Colokit 12 Màu",
+                price: 45000,
+                oldPrice: 50000,
+                discount: 10,
+                sold: 50,
+                status: "Còn hàng",
+                image: "https://via.placeholder.com/300x300/fff/333?text=But+Chi+Mau",
+                description: "Bút chì màu Colokit với 12 màu sắc tươi sáng, ruột chì mềm mại, dễ tô màu, an toàn cho trẻ nhỏ.",
+                category: "my-thuat"
+            },
+            {
+                id: 5,
+                name: "Bút Gel Nước Thiên Long TL-027",
+                price: 8000,
+                oldPrice: 10000,
+                discount: 20,
+                sold: 2000,
+                status: "Còn hàng",
+                image: "https://via.placeholder.com/300x300/fff/333?text=But+Gel",
+                description: "Bút gel nước mực xanh, viết trơn, không lem, phù hợp cho học sinh và văn phòng.",
+                category: "van-phong"
+            },
+            {
+                id: 6,
+                name: "Thước Kẻ Nhựa Dẻo 20cm",
+                price: 5000,
+                oldPrice: 6000,
+                discount: 15,
+                sold: 800,
+                status: "Còn hàng",
+                image: "https://via.placeholder.com/300x300/fff/333?text=Thuoc+Ke",
+                description: "Thước kẻ bằng nhựa dẻo, độ bền cao, không dễ gãy, có chia vạch rõ ràng.",
+                category: "hoc-tap"
+            },
+            // OUTLET (Giả lập sản phẩm giảm giá)
+            {
+                id: 7,
+                name: "Sổ Tay Lò Xo A5 - Giảm Sốc",
+                price: 25000,
+                oldPrice: 50000,
+                discount: 50,
+                sold: 100,
+                status: "Còn hàng",
+                image: "https://via.placeholder.com/300x300/fff/333?text=So+Tay+Outlet",
+                description: "Sổ tay lò xo A5 bìa cứng, giấy trắng mịn. Sản phẩm outlet giảm giá cực sốc.",
+                category: "outlet"
+            },
+            // TOP BÁN CHẠY (Giả lập)
+            {
+                id: 8,
+                name: "Bút Bi Thiên Long TL-027 (Hộp 20 cây)",
+                price: 120000,
+                oldPrice: 150000,
+                discount: 20,
+                sold: 5000,
+                status: "Còn hàng",
+                image: "https://via.placeholder.com/300x300/fff/333?text=But+Bi+Top",
+                description: "Bút bi Thiên Long TL-027 màu xanh, viết êm trơn. Top bán chạy số 1 tại Thiên Long.",
+                category: "top-ban-chay"
+            }
+        ];
+
+        let cartCount = 0; 
+
+        // --- HÀM XỬ LÝ ---
+
+        // 1. Hàm chuyển trang
+        function navigateTo(pageName, categorySlug = null, productId = null) {
+            // Ẩn tất cả các section
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Xóa active trên menu
+            document.querySelectorAll('.nav-list li').forEach(li => {
+                li.classList.remove('active');
+            });
+
+            // Hiển thị section tương ứng
+            if (pageName === 'home') {
+                document.getElementById('page-home').classList.add('active');
+                document.getElementById('nav-home').classList.add('active');
+            } 
+            else if (pageName === 'category') {
+                document.getElementById('page-category').classList.add('active');
+                // Xác định menu nào đang active dựa trên categorySlug
+                if(categorySlug === 'hoc-tap') document.getElementById('nav-hoc-tap').classList.add('active');
+                if(categorySlug === 'van-phong') document.getElementById('nav-van-phong').classList.add('active');
+                if(categorySlug === 'my-thuat') document.getElementById('nav-my-thuat').classList.add('active');
+                if(categorySlug === 'outlet') document.getElementById('nav-outlet').classList.add('active');
+                if(categorySlug === 'top-ban-chay') document.getElementById('nav-top').classList.add('active');
+
+                // Render sản phẩm theo danh mục
+                renderCategoryPage(categorySlug);
+            } 
+            else if (pageName === 'detail' && productId) {
+                document.getElementById('page-detail').classList.add('active');
+                renderProductDetail(productId);
+            }
+
+            // Cuộn lên đầu trang
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 2. Hàm render trang danh mục (Category Page)
+        function renderCategoryPage(categorySlug) {
+            const grid = document.getElementById('category-product-grid');
+            const titleEl = document.getElementById('category-title');
+            const breadcrumbEl = document.getElementById('breadcrumb-category-name');
+            const bannerEl = document.getElementById('category-banner');
+
+            if (!grid) return;
+            grid.innerHTML = ''; 
+
+            // Cập nhật tiêu đề và banner dựa trên danh mục
+            let categoryName = "Danh mục sản phẩm";
+            let bannerText = "DANH MỤC";
+            
+            if (categorySlug === 'hoc-tap') { categoryName = "Dụng Cụ Học Tập"; bannerText = "DỤNG CỤ HỌC TẬP"; }
+            else if (categorySlug === 'van-phong') { categoryName = "Văn Phòng Phẩm"; bannerText = "VĂN PHÒNG PHẨM"; }
+            else if (categorySlug === 'my-thuat') { categoryName = "Mỹ Thuật"; bannerText = "MỸ THUẬT"; }
+            else if (categorySlug === 'outlet') { categoryName = "Outlet - Giảm Giá"; bannerText = "🔥 OUTLET"; }
+            else if (categorySlug === 'top-ban-chay') { categoryName = "Top Bán Chạy"; bannerText = "🏆 TOP BÁN CHẠY"; }
+
+            titleEl.innerText = categoryName;
+            breadcrumbEl.innerText = categoryName;
+            
+            // Cập nhật banner
+            bannerEl.innerHTML = `
+                <img src="https://via.placeholder.com/900x200/2a5298/ffffff?text=${encodeURIComponent(bannerText)}" alt="${categoryName}">
+                <div class="banner-text">${bannerText}</div>
+            `;
+
+            // Lọc sản phẩm theo category
+            const filteredProducts = products.filter(p => p.category === categorySlug);
+
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">Chưa có sản phẩm trong danh mục này.</p>';
+                return;
+            }
+
+            // Render sản phẩm
+            filteredProducts.forEach(product => {
+                const isOutOfStock = product.status === "Hết hàng";
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = (e) => {
+                    if (e.target.tagName === 'BUTTON') return;
+                    navigateTo('detail', null, product.id);
+                };
+
+                card.innerHTML = `
+                    <div class="card-img">
+                        ${isOutOfStock ? '<span class="status-badge">Hết hàng</span>' : ''}
+                        <img src="${product.image}" alt="${product.name}">
+                    </div>
+                    <div class="card-info">
+                        <div class="sold-count">Đã bán: ${product.sold}</div>
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="price-box">
+                            <span class="current-price">${formatCurrency(product.price)}</span>
+                            <span class="old-price">${formatCurrency(product.oldPrice)}</span>
+                            <span class="discount">-${product.discount}%</span>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline" onclick="navigateTo('detail', null, ${product.id})">Chi tiết</button>
+                            <button class="btn btn-primary" 
+                                    ${isOutOfStock ? 'disabled' : ''} 
+                                    onclick="addToCart(event, ${product.id})">
+                                ${isOutOfStock ? 'HẾT HÀNG' : 'Thêm vào giỏ'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 3. Hàm render chi tiết sản phẩm
+        function renderProductDetail(productId) {
+            const product = products.find(p => p.id === productId);
+            const container = document.getElementById('product-detail-container');
+
+            if (!product) return;
+
+            const isOutOfStock = product.status === "Hết hàng";
+
+            container.innerHTML = `
+                <div class="detail-img-box">
+                    <img src="${product.image}" alt="${product.name}">
+                </div>
+                <div class="detail-info">
+                    <h1 class="detail-title">${product.name}</h1>
+                    <div class="detail-meta">
+                        <span>Thương hiệu: <strong>Thiên Long</strong></span>
+                        <span>Tình trạng: <strong style="color: ${isOutOfStock ? 'red' : 'green'}">${product.status}</strong></span>
+                        <span>Đã bán: ${product.sold}</span>
+                    </div>
+                    
+                    <div class="detail-price-box">
+                        <span class="current-price">${formatCurrency(product.price)}</span>
+                        <span class="old-price">${formatCurrency(product.oldPrice)}</span>
+                        <span class="discount">-${product.discount}%</span>
+                    </div>
+
+                    <div class="detail-desc">
+                        <h3>Mô tả sản phẩm:</h3>
+                        <p>${product.description}</p>
+                    </div>
+
+                    <div class="detail-actions">
+                        <button class="btn btn-primary btn-large" 
+                                ${isOutOfStock ? 'disabled' : ''} 
+                                onclick="addToCart(event, ${product.id})">
+                            ${isOutOfStock ? 'HẾT HÀNG' : 'THÊM VÀO GIỎ HÀNG'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 4. Hàm thêm vào giỏ hàng
+        function addToCart(event, productId) {
+            event.stopPropagation(); 
+            const product = products.find(p => p.id === productId);
+            
+            if (product && product.status !== "Hết hàng") {
+                cartCount++;
+                document.getElementById('cartCount').innerText = cartCount;
+                
+                const badge = document.getElementById('cartCount');
+                badge.style.transform = 'scale(1.5)';
+                setTimeout(() => { badge.style.transform = 'scale(1)'; }, 200);
+
+                alert(`Đã thêm "${product.name}" vào giỏ hàng!`);
+            } else {
+                alert('Sản phẩm này đã hết hàng!');
+            }
+        }
+
+        // 5. Hàm format tiền tệ VNĐ
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        }
+
+        // Hàm render sản phẩm nổi bật cho trang chủ (lấy 4 sản phẩm đầu)
+        function renderHomeProducts() {
+            const grid = document.getElementById('home-product-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            // Lấy 4 sản phẩm đầu tiên
+            const featured = products.slice(0, 4);
+            
+            featured.forEach(product => {
+                const isOutOfStock = product.status === "Hết hàng";
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = (e) => {
+                    if (e.target.tagName === 'BUTTON') return;
+                    navigateTo('detail', null, product.id);
+                };
+
+                card.innerHTML = `
+                    <div class="card-img">
+                        ${isOutOfStock ? '<span class="status-badge">Hết hàng</span>' : ''}
+                        <img src="${product.image}" alt="${product.name}">
+                    </div>
+                    <div class="card-info">
+                        <div class="sold-count">Đã bán: ${product.sold}</div>
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="price-box">
+                            <span class="current-price">${formatCurrency(product.price)}</span>
+                            <span class="old-price">${formatCurrency(product.oldPrice)}</span>
+                            <span class="discount">-${product.discount}%</span>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline" onclick="navigateTo('detail', null, ${product.id})">Chi tiết</button>
+                            <button class="btn btn-primary" 
+                                    ${isOutOfStock ? 'disabled' : ''} 
+                                    onclick="addToCart(event, ${product.id})">
+                                ${isOutOfStock ? 'HẾT HÀNG' : 'Thêm vào giỏ'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- KHỞI TẠO ---
+        window.onload = function() {
+            renderHomeProducts();
+            
+            // Mặc định mở trang chủ
+            navigateTo('home');
+        };
+    </script>
+</body>
+</html>
